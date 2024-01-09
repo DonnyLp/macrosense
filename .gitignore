@@ -1,2 +1,10 @@
+#exclude environment variables file from git
 .env
-myenv
+
+#exclude virtual environment
+/backend/django_env
+
+#exclude pycache
+__pycache__
+
+
