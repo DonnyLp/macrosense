@@ -5,11 +5,11 @@ from django.urls import reverse
 #user's macro goals
 class Goal(models.Model):
     user_id = models.ForeignKey('user.User', on_delete=models.CASCADE)
-    date = models.DateField()
-    calories = models.IntegerField()
-    protein = models.IntegerField()
-    fat = models.IntegerField()
-    carbs = models.IntegerField()
+    date = models.DateField(auto_now=False, auto_now_add=True)
+    calories = models.IntegerField(default=0)
+    protein = models.IntegerField(default=0)
+    fat = models.IntegerField(default=0)
+    carbs = models.IntegerField(default=0)
     class Meta:
         """
         configures default ordering of queryset by date
@@ -32,7 +32,7 @@ class Goal(models.Model):
 class Log(models.Model):
     #model fields
     user_id = models.ForeignKey('user.User', on_delete=models.CASCADE)
-    date = models.DateField()
+    date = models.DateField(auto_now=False, auto_now_add=True)
     total_calories = models.IntegerField(default=0)
     total_protein = models.IntegerField(default=0)
     total_fat = models.IntegerField(default=0)
@@ -110,7 +110,7 @@ class Food(models.Model):
 class FoodEntry(models.Model):
     food_id = models.ForeignKey('Food', on_delete=models.CASCADE)
     log_id = models.ForeignKey('Log', on_delete=models.CASCADE)
-    time = models.TimeField()
+    time = models.TimeField(auto_now=False, auto_now_add=True)
     
     class Meta:
         """
