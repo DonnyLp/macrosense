@@ -5,22 +5,18 @@ from django.urls import reverse
 #user's macro goals
 class Goal(models.Model):
     user_id = models.ForeignKey('user.User', on_delete=models.CASCADE)
-    date = models.DateField(auto_now=False, auto_now_add=True)
-    calories = models.IntegerField(default=0)
+    
+    # Need logic to compare these macros against daily logs
+    
+    calories = models.IntegerField(default=0) 
     protein = models.IntegerField(default=0)
     fat = models.IntegerField(default=0)
     carbs = models.IntegerField(default=0)
-    class Meta:
-        """
-        configures default ordering of queryset by date
-        """
-        ordering = ['date']
-    
-     
     
     @property 
     def __str__(self):
         return self.user_id.username + " " + str(self.date)
+    
     """
     provides a URL for the given model
     """
@@ -28,9 +24,9 @@ class Goal(models.Model):
         
         return reverse('Goal', args=[str(self.user_id)])
     
-#user's log for a given day
+# user's log for a given day
 class Log(models.Model):
-    #model fields
+    # model fields
     user_id = models.ForeignKey('user.User', on_delete=models.CASCADE)
     date = models.DateField(auto_now=False, auto_now_add=True)
     total_calories = models.IntegerField(default=0)
