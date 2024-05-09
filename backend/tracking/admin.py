@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Log, Goal, Food, FoodEntry
+from .models import Log, Goal, Food, Meal
 
 
 
@@ -7,5 +7,5 @@ from .models import Log, Goal, Food, FoodEntry
 admin.site.register(Log)
 admin.site.register(Goal)
 admin.site.register(Food)
-admin.site.register(FoodEntry)
+admin.site.register(Meal)
 
