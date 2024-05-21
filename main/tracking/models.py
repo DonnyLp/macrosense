@@ -2,15 +2,14 @@ from typing import Iterable
 from django.db import models
 from user.models import User
 from django.urls import reverse
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
     
-#user's macro goals
-class Goal(models.Model):
+"""
+    Model that represents a user's target for macronutrient intake  
+"""
+class Target(models.Model):
     user_id = models.ForeignKey('user.User', on_delete=models.CASCADE)
-    
-    # Need logic to compare these macros against daily logs
-    
     calories = models.IntegerField(default=0) 
     protein = models.IntegerField(default=0)
     fat = models.IntegerField(default=0)
@@ -25,23 +24,30 @@ class Goal(models.Model):
     """
     def get_absolute_url(self):
         
-        return reverse('Goal', args=[str(self.user_id)])
+        return reverse('Target', args=[str(self.user_id)])
     
-# user's log for a given day
+"""
+    Model that represents a user's macronutrient data log for a given day
+"""
 class Log(models.Model):
+    
     # model fields
     user_id = models.ForeignKey('user.User', on_delete=models.CASCADE)
     date = models.DateField(auto_now=False, auto_now_add=True)
     total_calories = models.IntegerField(default=0)
-    total_protein = models.IntegerField(default=0)F
+    total_protein = models.IntegerField(default=0)
     total_fat = models.IntegerField(default=0)
     total_carbs = models.IntegerField(default=0)
     
+    """
+        Internal class that changes the behavior of model fields
+    """
     class Meta:
         """
         configures default ordering of queryset by date
         """
         ordering = ["date"]
+        
         
     #calculate totals for the log entry
     def calculate_totals(self):
@@ -74,7 +80,9 @@ class Food(models.Model):
     carbs = models.IntegerField(default=0)
     serving_size = models.IntegerField(default=0)
     
-    
+    """
+        Internal class that changes the behavior of model fields
+    """
     class Meta():
         """
         configures default queryset by food name
@@ -96,10 +104,14 @@ class Food(models.Model):
 
 #food entry for a given log
 class FoodEntry(models.Model):
+    
     food_id = models.ForeignKey('Food', on_delete=models.CASCADE)
     log_id = models.ForeignKey('Log', on_delete=models.CASCADE)
     time = models.TimeField(auto_now=False, auto_now_add=True)
     
+    """
+        Internal class that changes the behavior of model fields
+    """
     class Meta:
         """
         configures default ordering of queryset by time
@@ -117,9 +129,7 @@ class FoodEntry(models.Model):
     @property
     def __str__(self):
             return self.food_id.food_name + " " + str(self.log_id.date)
-        
-        
-      
+    
     """
     Use post_save receiver to update and modify 
     the macro nutrient data based on serving size
@@ -134,19 +144,44 @@ class FoodEntry(models.Model):
         
     """
     @receiver(post_save, sender=Food)
-    def post_save_serving_size(sender,instance,true,**kwargs):
+    def post_save_serving_size(sender, instance, true, **kwargs):
         
-        # grab and set all of the macro data fields from "Food" instance
-        serving_size = instance.serving_size
-        calories = instance.calories
-        protein = instance.protein
-        fats = instance.fats
-        carbs = instance.carbs
+        serving_size = 0
+        calories = 0
+        protein = 0
+        fats = 0
+        carbs = 0
+        
+        # check if the instance "Food" was created and set
+        if true:
+            serving_size = instance.serving_size
+            calories = instance.calories
+            protein = instance.protein
+            fats = instance.fats
+            carbs = instance.carbs
+        else:
+            raise Exception("The Food model instance was not created")
         
         # compute the update macro nutrient data based on the serving size field
         calories *= serving_size
         protein *= serving_size
         fats *= serving_size
         carbs *= serving_size
+        
+        
+    """
+        Use the pre save method to compute the macronutrient totals
+        from all related Food Entries and store in the "Log" relation
+    """
 
+    @receiver(pre_save,sender=Log)    
+    def pre_save_total_macros(sender, instance, true, **kwargs):
+        
+        # declare variables to hold the instance model's variables
+        total_calories = 0
+        total_protein = 0
+        total_fats = 0
+        total_carbs = 0
+        
+         
         
