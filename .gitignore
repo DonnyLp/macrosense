@@ -2,9 +2,8 @@
 .env
 
 #exclude virtual environment
-/backend/django_env
+/main/django_env
 
 #exclude pycache
 __pycache__
-
 
