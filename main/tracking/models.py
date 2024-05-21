@@ -1,6 +1,9 @@
+from typing import Iterable
 from django.db import models
 from user.models import User
 from django.urls import reverse
+from django.db.models.signals import post_save
+from django.dispatch import receiver
     
 #user's macro goals
 class Goal(models.Model):
@@ -30,7 +33,7 @@ class Log(models.Model):
     user_id = models.ForeignKey('user.User', on_delete=models.CASCADE)
     date = models.DateField(auto_now=False, auto_now_add=True)
     total_calories = models.IntegerField(default=0)
-    total_protein = models.IntegerField(default=0)
+    total_protein = models.IntegerField(default=0)F
     total_fat = models.IntegerField(default=0)
     total_carbs = models.IntegerField(default=0)
     
@@ -40,8 +43,6 @@ class Log(models.Model):
         """
         ordering = ["date"]
         
-    
-    
     #calculate totals for the log entry
     def calculate_totals(self):
         food = FoodEntry.objects.filter(log_id=self)
@@ -80,16 +81,7 @@ class Food(models.Model):
         """
         ordering = ['food_name']
         
-    
-    #update macros based on serving size
-    def update_macros(self):
-        self.calories *= self.serving_size
-        self.protein *= self.serving_size
-        self.fat *= self.serving_size
-        self.carbs *= self.serving_size
-        self.save()
-        
-    
+
     @property 
     def __str__(self):
         return self.food_name + str(self.food_id)
@@ -125,3 +117,36 @@ class FoodEntry(models.Model):
     @property
     def __str__(self):
             return self.food_id.food_name + " " + str(self.log_id.date)
+        
+        
+      
+    """
+    Use post_save receiver to update and modify 
+    the macro nutrient data based on serving size
+    after the "Food" instance is saved
+    
+    Args:
+        sender(Food): The model class
+        instance(Food): The instance of the model being saved
+        **kwargs: Additional keyword agruments
+    
+    Returns:
+        
+    """
+    @receiver(post_save, sender=Food)
+    def post_save_serving_size(sender,instance,true,**kwargs):
+        
+        # grab and set all of the macro data fields from "Food" instance
+        serving_size = instance.serving_size
+        calories = instance.calories
+        protein = instance.protein
+        fats = instance.fats
+        carbs = instance.carbs
+        
+        # compute the update macro nutrient data based on the serving size field
+        calories *= serving_size
+        protein *= serving_size
+        fats *= serving_size
+        carbs *= serving_size
+
+        
